@@ -12,7 +12,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const existingUser = await Pool.query(
+  const existingUser = await pool.query(
     "SELECT id FROM users WHERE email = $1",
     [email]
   );
@@ -23,7 +23,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
-  const newUser = await Pool.query(
+  const newUser = await pool.query(
     `INSERT INTO users (email,password_hash) VALUES ($1, $2) RETURNING id, email`,
     [email, hashedPassword]
   );
@@ -42,7 +42,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const userQuery = await Pool.query("SELECT * FROM users WHERE email = $1", [
+  const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
   ]);
 

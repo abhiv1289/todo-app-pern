@@ -1,6 +1,4 @@
 import "./env.js";
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
 import cors from "cors";
 
@@ -28,9 +26,21 @@ import todoRoutes from "./routes/todo.routes.js";
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/todos", todoRoutes);
 
+// 404 Handler
+app.use((req, res, next) => {
+  next(new ApiError(404, "Route not found"));
+});
+
 //Global Error Handler
 app.use((err, req, res, next) => {
-  throw new ApiError(err.statusCode || 404, err.message || "Route Not Found");
+  const statusCode = err.statusCode || 500;
+
+  res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message: err.message || "Internal Server Error",
+    errors: err.errors || [],
+  });
 });
 
 const PORT = process.env.PORT || 5000;
