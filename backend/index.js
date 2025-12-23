@@ -1,13 +1,14 @@
+import "./env.js";
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
-import Pool from "./config/db.js";
-import dotenv from "dotenv";
+
+import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import { ApiError } from "./utils/ApiError.js";
 
 const app = express();
-
-dotenv.config();
 
 //Middlewares
 app.use(
@@ -34,6 +35,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });

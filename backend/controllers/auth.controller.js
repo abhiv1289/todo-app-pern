@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import Pool from "../config/db.js";
+import { pool } from "../config/db.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;

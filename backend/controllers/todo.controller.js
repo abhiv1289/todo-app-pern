@@ -1,5 +1,5 @@
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { pool } from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -69,3 +69,5 @@ const deleteTodo = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, deleted.rows[0], "Todo deleted successfully"));
 });
+
+export { createTodo, getTodos, updateTodo, deleteTodo };
