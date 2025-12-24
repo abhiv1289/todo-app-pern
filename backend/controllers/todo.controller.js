@@ -1,106 +1,51 @@
-import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { pool } from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+  createTodoService,
+  getTodosService,
+  updateTodoService,
+  deleteTodoService,
+} from "../services/todo.service.js";
 
 const createTodo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
-  if (!title) {
-    throw new ApiError(400, "Title is required");
-  }
-
-  const newTodo = await pool.query(
-    `INSERT INTO todos (user_id,title,description) VALUES ($1, $2, $3) RETURNING *`,
-    [req.user.id, title, description]
-  );
+  const newTodo = await createTodoService(req.user.id, title, description);
 
   return res
     .status(201)
-    .json(new ApiResponse(201, newTodo.rows[0], "Todo created successfully"));
+    .json(new ApiResponse(201, newTodo, "Todo created successfully"));
 });
 
 const getTodos = asyncHandler(async (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
 
-  const page = req.query.page || 1;
-  const limit = req.query.limit || 10;
-
-  const offset = (page - 1) * limit;
-
-  //Get Total Count
-  const countResult = await pool.query(
-    `SELECT COUNT(*) FROM todos WHERE user_id = $1`,
-    [req.user.id]
-  );
-  const totalTodos = Number(countResult.rows[0].count);
-  const totalPages = Math.ceil(totalTodos / limit);
-
- //Get Paginated Todos
-
-
-  const todosResult = await pool.query(
-    `SELECT * 
-     FROM todos
-     WHERE user_id = $1
-    ORDER BY created_at DESC
-    LIMIT $2 OFFSET $3`,
-    [req.user.id, limit, offset]
-  );
+  const result = await getTodosService(req.user.id, page, limit);
 
   return res
     .status(200)
-    .json(new ApiResponse(200,
-      {
-        todos: todosResult.rows,
-        pagination: {
-          totalTodos,
-          totalPages,
-          currentPage: Number(page),
-          limit : Number(limit),
-          hasNextPage: Number(page) < totalPages,
-          hasPrevPage: Number(page) > 1
-        }
-      }
-      , "Todos fetched successfully"));
+    .json(new ApiResponse(200, result, "Todos fetched successfully"));
 });
 
 const updateTodo = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { title, is_completed } = req.body;
-
-  const updated = await pool.query(
-    `UPDATE todos
-        SET title = COALESCE($1,title),
-            is_completed = COALESCE($2,is_completed),
-            updated_at = NOW()
-        WHERE id = $3 AND user_id = $4
-        RETURNING *`,
-    [title, is_completed, id, req.user.id]
+  const updatedTodo = await updateTodoService(
+    req.user.id,
+    req.params.id,
+    req.body
   );
-
-  if (updated.rows.length === 0) {
-    throw new ApiError(404, "Todo not found");
-  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, updated.rows[0], "Todo updated successfully"));
+    .json(new ApiResponse(200, updatedTodo, "Todo updated successfully"));
 });
 
 const deleteTodo = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const deleted = await pool.query(
-    "DELETE FROM todos WHERE id = $1 AND user_id = $2 RETURNING *",
-    [id, req.user.id]
-  );
-  if (deleted.rows.length === 0) {
-    throw new ApiError(404, "Todo not found");
-  }
+  const deletedTodo = await deleteTodoService(req.user.id, req.params.id);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, deleted.rows[0], "Todo deleted successfully"));
+    .json(new ApiResponse(200, deletedTodo, "Todo deleted successfully"));
 });
 
 export { createTodo, getTodos, updateTodo, deleteTodo };

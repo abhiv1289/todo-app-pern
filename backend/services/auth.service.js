@@ -1,0 +1,58 @@
+import bcrypt from "bcrypt";
+import { ApiError } from "../utils/ApiError.js";
+import { pool } from "../config/db.js";
+
+const createUserService = async (email, password) => {
+  // Implementation for creating a user
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  const existingUser = await pool.query(
+    "SELECT id FROM users WHERE email = $1",
+    [email]
+  );
+
+  if (existingUser.rows.length > 0) {
+    throw new ApiError(409, "User already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  const newUser = await pool.query(
+    `INSERT INTO users (email,password_hash) VALUES ($1, $2) RETURNING id, email`,
+    [email, hashedPassword]
+  );
+
+  return newUser.rows[0];
+};
+const loginUserService = async (email, password) => {
+  // Implementation for logging in a user
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [
+    email,
+  ]);
+
+  const user = userQuery.rows[0];
+
+  if (!user) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password_hash);
+
+  if (!isMatch) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+  return token;
+};
+export { createUserService, loginUserService };
