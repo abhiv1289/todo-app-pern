@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { ApiError } from "../utils/ApiError.js";
 import { pool } from "../config/db.js";
+import jwt from "jsonwebtoken";
 
 const createUserService = async (email, password) => {
   // Implementation for creating a user
