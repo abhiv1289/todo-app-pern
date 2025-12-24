@@ -19,4 +19,23 @@ const updateTodoSchema = z.object({
   }),
 });
 
-export { createTodoSchema, updateTodoSchema };
+const getTodoSchema = z.object({
+  query: z.object({
+    page: z
+      .string()
+      .optional()
+      .transform((val) => Number(val))
+      .refine((val) => !val || val > 0, {
+        message: "Page must be a positive number",
+      }),
+    limit: z
+      .string()
+      .optional()
+      .transform((val) => Number(val))
+      .refine((val) => !val || val > 0, {
+        message: "Limit must be between 1 and 50",
+      }),
+  }),
+});
+
+export { createTodoSchema, updateTodoSchema, getTodoSchema };

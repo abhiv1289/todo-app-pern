@@ -5,6 +5,7 @@ import { validate } from "../middlewares/validate.middleware.js";
 import {
   createTodoSchema,
   updateTodoSchema,
+  getTodoSchema,
 } from "../validations/todo.validation.js";
 import {
   createTodo,
@@ -16,9 +17,13 @@ import {
 const router = Router();
 
 router.use(authenticateToken);
+
 router.post("/", validate(createTodoSchema), asyncHandler(createTodo));
-router.get("/", asyncHandler(getTodos));
+
+router.get("/", validate(getTodoSchema), asyncHandler(getTodos));
+
 router.put("/:id", validate(updateTodoSchema), asyncHandler(updateTodo));
+
 router.delete("/:id", asyncHandler(deleteTodo));
 
 export default router;

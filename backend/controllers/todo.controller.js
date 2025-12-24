@@ -11,7 +11,7 @@ const createTodo = asyncHandler(async (req, res) => {
   }
 
   const newTodo = await pool.query(
-    `INSERT INTO todoes (user_id,title,description) VALUES ($1, $2, $3) RETURNING *`,
+    `INSERT INTO todos (user_id,title,description) VALUES ($1, $2, $3) RETURNING *`,
     [req.user.id, title, description]
   );
 
@@ -21,14 +21,47 @@ const createTodo = asyncHandler(async (req, res) => {
 });
 
 const getTodos = asyncHandler(async (req, res) => {
-  const todos = await pool.query(
-    `SELECT * FROM todoes WHERE user_id = $1 ORDER BY created_at DESC`,
+
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+
+  const offset = (page - 1) * limit;
+
+  //Get Total Count
+  const countResult = await pool.query(
+    `SELECT COUNT(*) FROM todos WHERE user_id = $1`,
     [req.user.id]
+  );
+  const totalTodos = Number(countResult.rows[0].count);
+  const totalPages = Math.ceil(totalTodos / limit);
+
+ //Get Paginated Todos
+
+
+  const todosResult = await pool.query(
+    `SELECT * 
+     FROM todos
+     WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [req.user.id, limit, offset]
   );
 
   return res
     .status(200)
-    .json(new ApiResponse(200, todos.rows, "Todos fetched successfully"));
+    .json(new ApiResponse(200,
+      {
+        todos: todosResult.rows,
+        pagination: {
+          totalTodos,
+          totalPages,
+          currentPage: Number(page),
+          limit : Number(limit),
+          hasNextPage: Number(page) < totalPages,
+          hasPrevPage: Number(page) > 1
+        }
+      }
+      , "Todos fetched successfully"));
 });
 
 const updateTodo = asyncHandler(async (req, res) => {
