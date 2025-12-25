@@ -8,6 +8,8 @@ import { ApiError } from "./utils/ApiError.js";
 
 const app = express();
 
+app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
 //Middlewares
 app.use(
   cors({
@@ -15,9 +17,6 @@ app.use(
     credentials: true,
   })
 );
-
-app.use(express.json({ limit: "10mb" }));
-app.use(cookieParser());
 
 //Routes
 import authRoutes from "./routes/auth.routes.js";

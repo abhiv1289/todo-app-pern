@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik } from "formik";
 import {
   Box,
@@ -8,9 +8,14 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { axiosInstance } from "../utility/axios";
+import { useUser } from "../context/UserContext";
 
 const Loginpage = () => {
+  const [loading, setLoading] = useState(false);
+  const { loginUser } = useUser();
+  const navigate = useNavigate();
   return (
     <Container
       maxWidth="xs"
@@ -49,9 +54,32 @@ const Loginpage = () => {
             }
             return errors;
           }}
-          onSubmit={(values, { setSubmitting }) => {
+          onSubmit={(values, { setSubmitting, resetForm }) => {
             setTimeout(() => {
-              alert(JSON.stringify(values, null, 2)); // replace later with API request
+              const handleOnSubmit = async () => {
+                setLoading(true);
+                try {
+                  const response = await axiosInstance.post(
+                    "/v1/auth/register",
+                    values,
+                    {
+                      withCredentials: true,
+                    }
+                  );
+                  console.log("Signup Successful:", response.data);
+                  resetForm();
+                  loginUser(response.data.data.user);
+                  navigate("/");
+                } catch (error) {
+                  console.error(
+                    "Signup error:",
+                    error.response?.data?.message || error.message
+                  );
+                } finally {
+                  setLoading(false);
+                }
+              };
+              handleOnSubmit();
               setSubmitting(false);
             }, 400);
           }}
@@ -105,7 +133,7 @@ const Loginpage = () => {
                 fullWidth
                 sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
               >
-                Sign Up
+                {loading ? "Signing Up..." : "Sign Up"}
               </Button>
             </form>
           )}

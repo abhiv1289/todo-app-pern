@@ -54,6 +54,7 @@ const loginUserService = async (email, password) => {
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
-  return token;
+
+  return { user: { id: user.id, email: user.email }, token };
 };
 export { createUserService, loginUserService };
