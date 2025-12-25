@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -13,10 +13,12 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import { useUser } from "../context/UserContext";
 
 const Navbar = () => {
-  const [auth, setAuth] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+  const { user, logoutUser } = useUser();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -25,9 +27,11 @@ const Navbar = () => {
     setAnchorEl(null);
   };
   const handleLogout = () => {
-    setAuth(false);
+    logoutUser();
+    navigate("/login");
     setAnchorEl(null);
   };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -46,7 +50,7 @@ const Navbar = () => {
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
           >
-            {auth ? (
+            {user ? (
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             ) : (
               <>

@@ -20,11 +20,11 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const token = await loginUserService(email, password);
+  const { user, token } = await loginUserService(email, password);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { token }, "Login successful"));
+    .json(new ApiResponse(200, { user, token }, "Login successful"));
 });
 
 export { registerUser, loginUser };
