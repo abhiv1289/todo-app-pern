@@ -46,7 +46,7 @@ const Homepage = () => {
         </Typography>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid>
             <Paper sx={{ p: 3, textAlign: "center" }}>
               <Typography variant="h6" fontWeight="bold" mb={1}>
                 📋 Simple & Clean

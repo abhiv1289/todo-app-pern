@@ -53,22 +53,24 @@ const Navbar = () => {
             {user ? (
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             ) : (
-              <>
+              [
                 <MenuItem
+                  key="login"
                   onClick={handleMenuClose}
                   component={Link}
                   to="/login"
                 >
                   Login
-                </MenuItem>
+                </MenuItem>,
                 <MenuItem
+                  key="signup"
                   onClick={handleMenuClose}
                   component={Link}
                   to="/signup"
                 >
                   Signup
-                </MenuItem>
-              </>
+                </MenuItem>,
+              ]
             )}
           </Menu>
         </Toolbar>
