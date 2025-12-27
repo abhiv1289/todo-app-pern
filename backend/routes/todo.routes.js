@@ -12,6 +12,7 @@ import {
   getTodos,
   updateTodo,
   deleteTodo,
+  deleteAllTodos,
 } from "../controllers/todo.controller.js";
 
 const router = Router();
@@ -25,5 +26,7 @@ router.get("/", validate(getTodoSchema), asyncHandler(getTodos));
 router.put("/:id", validate(updateTodoSchema), asyncHandler(updateTodo));
 
 router.delete("/:id", asyncHandler(deleteTodo));
+
+router.delete("/", asyncHandler(deleteAllTodos));
 
 export default router;

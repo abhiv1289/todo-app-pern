@@ -1,9 +1,16 @@
-import { Button, Checkbox, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Typography,
+  Container,
+  Box,
+  Paper,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { Check } from "lucide-react";
 import CheckboxList from "../components/CheckboxList";
 import { axiosInstance } from "../utility/axios";
+
 const Todopage = () => {
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
@@ -11,20 +18,40 @@ const Todopage = () => {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const limit = 5;
-  const handleAddTask = async (task) => {
+
+  const handleAddTask = async () => {
+    if (!task.trim()) return;
     try {
       const res = await axiosInstance.post("/v1/todos/", {
         title: task,
         description: "",
       });
-      console.log(res);
-
       setTasks((prev) => [...prev, res.data.data]);
       setTask("");
     } catch (error) {
       console.log(error);
     }
   };
+
+  const handleTaskUpdate = (taskId, updatedData) => {
+    if (updatedData === "delete") {
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      return;
+    }
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, ...updatedData } : t))
+    );
+  };
+
+  const handleAllDelete = async () => {
+    try {
+      await axiosInstance.delete("/v1/todos/");
+      setTasks([]);
+    } catch (error) {
+      console.error("Delete all error:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true);
@@ -32,7 +59,6 @@ const Todopage = () => {
         const res = await axiosInstance.get(
           `/v1/todos?page=${page}&limit=${limit}`
         );
-        console.log(res);
         setTasks(res.data.data.todos);
         setPagination(res.data.data.pagination);
       } catch (error) {
@@ -42,63 +68,126 @@ const Todopage = () => {
       }
     };
     fetchTasks();
-  }, [page, tasks.length]);
+  }, [page]);
+
   return (
-    <>
-      <h1 className="text-center text-2xl bg-blue-300 my-2 p-2">
-        Manage your tasks here!
-      </h1>
-      <div className="flex gap-2 mx-2">
+    <Container sx={{ pt: 4, pb: 6 }}>
+      {/* 🏷️ PAGE TITLE */}
+      <Typography
+        textAlign="center"
+        sx={{
+          fontSize: { xs: "1.6rem", sm: "2rem" },
+          fontWeight: "bold",
+          mb: 3,
+          p: 2,
+          bgcolor: "primary.main",
+          color: "white",
+          borderRadius: 2,
+        }}
+      >
+        Manage Your Tasks
+      </Typography>
+
+      {/* ➕ INPUT AREA */}
+      <Paper
+        sx={{
+          p: { xs: 2, sm: 3 },
+          mb: 2,
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          alignItems: "center",
+        }}
+        elevation={3}
+      >
         <TextField
-          sx={{
-            marginLeft: 2,
-          }}
-          id="outlined-basic"
-          label={tasks.length + 1 + ". New Task"}
+          fullWidth
+          label={`${tasks.length + 1}. New Task`}
           variant="outlined"
-          onChange={(e) => setTask(e.target.value)}
           value={task}
+          onChange={(e) => setTask(e.target.value)}
         />
+
         <Button
-          sx={{
-            marginRight: 2,
-          }}
-          variant="outlined"
+          variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => handleAddTask(task)}
+          onClick={handleAddTask}
+          sx={{
+            width: { xs: "100%", sm: "auto" },
+            py: { xs: 1.2, sm: 1 },
+          }}
         >
           Add Task
         </Button>
-      </div>
-      <div>
-        {loading ? (
-          <Typography>Loading...</Typography>
-        ) : (
-          <>
-            <CheckboxList tasks={tasks} />
-            <div className="flex justify-between mx-2 my-2">
-              <Button
-                variant="contained"
-                disabled={!pagination?.hasPrevPage}
-                onClick={() => setPage(page - 1)}
-              >
-                Previous
-              </Button>
-              <Typography variant="body1">
-                Page {pagination?.currentPage} of {pagination?.totalPages}
-              </Typography>
-              <Button
-                variant="contained"
-                disabled={!pagination?.hasNextPage}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+      </Paper>
+
+      {/* ❌ CLEAR ALL */}
+      <Button
+        variant="outlined"
+        color="error"
+        fullWidth
+        sx={{ mb: 3, py: { xs: 1, sm: 1.2 }, fontWeight: "bold" }}
+        onClick={handleAllDelete}
+      >
+        ❌ Clear All
+      </Button>
+
+      {/* 📋 TASKS LIST */}
+      {loading ? (
+        <Typography textAlign="center" mt={3}>
+          Loading...
+        </Typography>
+      ) : tasks.length === 0 ? (
+        <Typography
+          textAlign="center"
+          color="text.secondary"
+          sx={{ mt: 3, fontSize: { xs: "1rem", sm: "1.2rem" } }}
+        >
+          No tasks found. Add your first task above!
+        </Typography>
+      ) : (
+        <CheckboxList tasks={tasks} onUpdate={handleTaskUpdate} />
+      )}
+
+      {/* 🔄 PAGINATION */}
+      {tasks.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 4,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Button
+            variant="contained"
+            disabled={!pagination?.hasPrevPage}
+            onClick={() => setPage((prev) => prev - 1)}
+            sx={{ flex: 1 }}
+          >
+            Previous
+          </Button>
+
+          <Typography
+            textAlign="center"
+            sx={{ flex: 1, fontSize: { xs: "0.9rem", sm: "1rem" } }}
+          >
+            Page {pagination?.currentPage} of {pagination?.totalPages}
+          </Typography>
+
+          <Button
+            variant="contained"
+            disabled={!pagination?.hasNextPage}
+            onClick={() => setPage((prev) => prev + 1)}
+            sx={{ flex: 1 }}
+          >
+            Next
+          </Button>
+        </Box>
+      )}
+    </Container>
   );
 };
 
