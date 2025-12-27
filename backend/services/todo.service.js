@@ -50,16 +50,17 @@ const getTodosService = async (userId, page, limit) => {
 };
 
 const updateTodoService = async (userId, todoId, updates) => {
-  const { title, is_completed } = updates;
+  const { title, description, is_completed } = updates;
 
   const result = await pool.query(
     `UPDATE todos
      SET title = COALESCE($1, title),
-         is_completed = COALESCE($2, is_completed),
+         description = COALESCE($2, description),
+         is_completed = COALESCE($3, is_completed),
          updated_at = NOW()
-     WHERE id = $3 AND user_id = $4
+     WHERE id = $4 AND user_id = $5
      RETURNING *`,
-    [title, is_completed, todoId, userId]
+    [title, description, is_completed, todoId, userId]
   );
 
   if (!result.rows.length) {
@@ -84,9 +85,19 @@ const deleteTodoService = async (userId, todoId) => {
   return result.rows[0];
 };
 
+const deleteAllTodosService = async (userId) => {
+  const res = await pool.query(
+    `DELETE FROM todos
+     WHERE user_id = $1`,
+    [userId]
+  );
+  return res.rowCount;
+};
+
 export {
   createTodoService,
   getTodosService,
   updateTodoService,
   deleteTodoService,
+  deleteAllTodosService,
 };

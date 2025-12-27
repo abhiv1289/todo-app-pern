@@ -5,6 +5,7 @@ import {
   getTodosService,
   updateTodoService,
   deleteTodoService,
+  deleteAllTodosService,
 } from "../services/todo.service.js";
 
 const createTodo = asyncHandler(async (req, res) => {
@@ -48,4 +49,13 @@ const deleteTodo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, deletedTodo, "Todo deleted successfully"));
 });
 
-export { createTodo, getTodos, updateTodo, deleteTodo };
+const deleteAllTodos = asyncHandler(async (req, res) => {
+  const deletedCount = await deleteAllTodosService(req.user.id);
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { deletedCount }, "All todos deleted successfully")
+    );
+});
+
+export { createTodo, getTodos, updateTodo, deleteTodo, deleteAllTodos };

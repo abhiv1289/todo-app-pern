@@ -12,10 +12,11 @@ import { Link, useNavigate } from "react-router";
 import { axiosInstance } from "../utility/axios";
 import { useUser } from "../context/UserContext";
 
-const Loginpage = () => {
+const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const { loginUser } = useUser();
   const navigate = useNavigate();
+
   return (
     <Container
       maxWidth="xs"
@@ -23,18 +24,26 @@ const Loginpage = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "80vh",
+        minHeight: "85vh",
+        px: { xs: 2, sm: 0 },
       }}
     >
       <Paper
-        elevation={3}
+        elevation={4}
         sx={{
-          p: 4,
+          p: { xs: 3, sm: 4 },
           width: "100%",
           borderRadius: 3,
+          boxShadow: { xs: 2, sm: 4 },
         }}
       >
-        <Typography variant="h4" textAlign="center" fontWeight="bold" mb={3}>
+        <Typography
+          variant="h4"
+          textAlign="center"
+          fontWeight="bold"
+          mb={3}
+          sx={{ fontSize: { xs: "1.8rem", sm: "2.2rem" } }}
+        >
           Sign Up
         </Typography>
 
@@ -62,13 +71,11 @@ const Loginpage = () => {
                   const response = await axiosInstance.post(
                     "/v1/auth/register",
                     values,
-                    {
-                      withCredentials: true,
-                    }
+                    { withCredentials: true }
                   );
-                  console.log("Signup Successful:", response.data);
-                  resetForm();
+
                   loginUser(response.data.data.user);
+                  resetForm();
                   navigate("/");
                 } catch (error) {
                   console.error(
@@ -93,7 +100,6 @@ const Loginpage = () => {
             handleSubmit,
           }) => (
             <form onSubmit={handleSubmit}>
-              {/* EMAIL INPUT */}
               <TextField
                 label="Email"
                 name="email"
@@ -106,9 +112,9 @@ const Loginpage = () => {
                 value={values.email}
                 error={Boolean(errors.email && touched.email)}
                 helperText={errors.email && touched.email && errors.email}
+                size="medium"
               />
 
-              {/* PASSWORD INPUT */}
               <TextField
                 label="Password"
                 name="password"
@@ -123,34 +129,38 @@ const Loginpage = () => {
                 helperText={
                   errors.password && touched.password && errors.password
                 }
+                size="medium"
               />
 
-              {/* SUBMIT BUTTON */}
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
-                sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
+                sx={{
+                  mt: 3,
+                  py: { xs: 1, sm: 1.2 },
+                  fontWeight: "bold",
+                  fontSize: { xs: "0.95rem", sm: "1rem" },
+                }}
               >
                 {loading ? "Signing Up..." : "Sign Up"}
               </Button>
             </form>
           )}
         </Formik>
-        <div>
-          <span
-            style={{ marginTop: "10px", display: "block", textAlign: "center" }}
-          >
+
+        <Box textAlign="center" mt={2}>
+          <Typography fontSize={{ xs: "0.9rem", sm: "1rem" }}>
             Already have an account?{" "}
-            <Link to="/login">
-              <span style={{ color: "blue", cursor: "pointer" }}>Login</span>
+            <Link to="/login" style={{ color: "#1976d2", fontWeight: "bold" }}>
+              Login
             </Link>
-          </span>
-        </div>
+          </Typography>
+        </Box>
       </Paper>
     </Container>
   );
 };
 
-export default Loginpage;
+export default SignupPage;
