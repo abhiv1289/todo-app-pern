@@ -22,6 +22,14 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { user, token } = await loginUserService(email, password);
 
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 3600000, // 1 hour
+    path: "/",
+  });
+
   return res
     .status(200)
     .json(new ApiResponse(200, { user, token }, "Login successful"));
