@@ -20,16 +20,18 @@ app.use(
   })
 );
 
-// Handle Preflight requests globally (IMPORTANT on Vercel)
 app.options(
-  "*",
+  "/*",
   cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 //Routes
 import authRoutes from "./routes/auth.routes.js";
