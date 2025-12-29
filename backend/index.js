@@ -20,6 +20,17 @@ app.use(
   })
 );
 
+// Handle Preflight requests globally (IMPORTANT on Vercel)
+app.options(
+  "*",
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 //Routes
 import authRoutes from "./routes/auth.routes.js";
 import todoRoutes from "./routes/todo.routes.js";
